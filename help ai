@@ -1,0 +1,166 @@
+Ok, vamos configurar um sistema de autenticação para seu site PetShop Punpet usando Django, Python e SQL no backend.
+1. Criar um Projeto Django:
+django-admin startproject petshop
+Use code with caution.
+Bash
+2. Criar um App para seu PetShop:
+python manage.py startapp core
+Use code with caution.
+Bash
+3. Configurar o Django:
+petshop/settings.py:
+Adicione o app core às INSTALLED_APPS:
+INSTALLED_APPS = [
+    # ... outras apps
+    'core',
+    'django.contrib.auth',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    # ...
+]
+Use code with caution.
+Python
+Defina o banco de dados (se ainda não estiver configurado):
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+Use code with caution.
+Python
+4. Criar Modelos (Models):
+core/models.py:
+from django.db import models
+from django.contrib.auth.models import AbstractUser
+
+class User(AbstractUser):
+    # Adicione campos extras, se necessário
+    endereco = models.CharField(max_length=255, blank=True)
+
+class Produto(models.Model):
+    # ... (seus campos para os produtos)
+Use code with caution.
+Python
+User estende o AbstractUser do Django para adicionar seus próprios campos, como endereco.
+Produto representa seus produtos.
+5. Migrar os Modelos para o Banco de Dados:
+python manage.py makemigrations
+python manage.py migrate
+Use code with caution.
+Bash
+6. Criar Views e URLs:
+core/views.py:
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login, logout
+from .models import User, Produto
+
+def cadastro(request):
+    if request.method == 'POST':
+        # Processar o formulário de cadastro
+        # ... (criar um novo usuário e salvar no banco)
+        return redirect('login')
+    else:
+        # Mostrar o formulário de cadastro
+        return render(request, 'core/cadastro.html')
+
+def login_view(request):
+    if request.method == 'POST':
+        # Processar o formulário de login
+        # ... (autenticação do usuário)
+        return redirect('home')
+    else:
+        # Mostrar o formulário de login
+        return render(request, 'core/login.html')
+
+@login_required
+def home(request):
+    # Exibir a página principal do site
+    return render(request, 'core/home.html')
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')
+
+# ... outras views (para produtos, etc.)
+Use code with caution.
+Python
+cadastro: Processa o cadastro do usuário.
+login_view: Processa o login do usuário.
+home: A página principal do site, acessível apenas para usuários autenticados (@login_required).
+logout_view: Realiza o logout do usuário.
+petshop/urls.py:
+from django.contrib import admin
+from django.urls import path, include
+from core import views
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', views.cadastro, name='cadastro'),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('home/', views.home, name='home'),
+    # ... (outras URLs)
+]
+Use code with caution.
+Python
+7. Criar Templates HTML:
+core/templates/core/cadastro.html:
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetShop Punpet - Cadastro</title>
+    <link rel="stylesheet" href="{% static 'styles/cadastrar.css' %}">
+</head>
+<body>
+    <div class="cadastro-container">
+        <!-- ... (Seu formulário de cadastro) ... -->
+    </div>
+</body>
+</html>
+Use code with caution.
+Html
+core/templates/core/login.html:
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetShop Punpet - Login</title>
+    <link rel="stylesheet" href="{% static 'styles/cadastrar.css' %}">
+</head>
+<body>
+    <div class="cadastro-container">
+        <!-- ... (Seu formulário de login) ... -->
+    </div>
+</body>
+</html>
+Use code with caution.
+Html
+core/templates/core/home.html:
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetShop Punpet - Área Restrita</title>
+</head>
+<body>
+    <h1>Bem-vindo à área restrita do PetShop Punpet!</h1>
+    <p>Esta página só é acessível para usuários logados.</p>
+
+    <!-- Adicione o conteúdo da sua página principal aqui -->
+
+    <a href="{% url 'logout' %}">Sair</a>
+</body>
+</html>
+Use code with caution.
+Html
+8. Implementar a Lógica de Autenticação:
+core/views.py:
+# ... outras imports
+
+def cadastro(
